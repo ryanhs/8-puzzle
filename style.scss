@@ -23,8 +23,7 @@
 			font-weight: bold;
 			
 			&.puzzle-0{
-				background: #000 !important;
-				color: #FFF !important;
+				background: #4E4E4E !important;
 			}
 		}
 	}
@@ -38,4 +37,14 @@
 .log{
 	max-height:300px;
 	overflow-x:scroll;
+}
+
+
+.footer{
+	p{
+	    font-style: italic;
+		font-size: 8pt;
+		font-family: monospace;
+		color: #6D6363;
+	}
 }

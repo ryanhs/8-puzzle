@@ -1,58 +1,25 @@
-$(function(){
-	
-	function resizeStyle(){
-		board_td = $('.board tr td');
-		board_td.height(board_td.width());
-		$('.log').scrollTop($('.log')[0].scrollHeight);
-	}
-	
-	var board = new Puzzle($('.board table'));
-	board.random();
-	board.refreshBoard();
-	resizeStyle();
-	
-	
-	log = $('.log');
-	log.empty();
-	$(document).keydown(function(e) {
-		switch(e.which) {
-			case 37: move('left'); break;
-			case 38: move('up'); break;
-			case 39: move('right'); break;
-			case 40: move('down'); break;
-			default: return;
-		}
-		e.preventDefault();
-	});
-	
-	
-	log_i = 1;
-	function move(direction){
-		if(board.isLegalMove(direction)){
-			board.move(direction);
-			board.refreshBoard();
-			resizeStyle();
-			
-			log.append($('<p>').html(log_i + '. ' + direction));
-			log_i++;
-		}
-	}
-	
-});
-
 
 function Puzzle (boardTable) {
 	this.boardTable = boardTable;
 	this.blankCoordinate = [0, 0];
 	this.legalMoves = [];
 	
-	this.data = [
+	this.defaultData = [
 		[1, 2, 3],
-		[4, 5, 6],
-		[7, 8, 0]
+		[8, 0, 4],
+		[7, 6, 5]
 	];
+	this.data = [];
 	
 	this.random = function(){
+		this.data = [];
+		for(row = 1; row <= 3; row++){
+			this.data.push([]);
+			for(cell = 1; cell <= 3; cell++){
+				this.data[row - 1][cell -1] = this.defaultData[row - 1][cell -1];
+			}
+		}
+		
 		tmp = [];
 		while(true){
 			rand = Math.floor((Math.random() * 100000) % 10)
@@ -73,25 +40,72 @@ function Puzzle (boardTable) {
 		}
 		
 		this.calculateSituation();
-	};
+		
+		return this;
+	}
 	
 	this.init = function(){
+		this.data = [];
+		for(row = 1; row <= 3; row++){
+			this.data.push([]);
+			for(cell = 1; cell <= 3; cell++){
+				this.data[row - 1][cell -1] = this.defaultData[row - 1][cell -1];
+			}
+		}
+		
 		this.calculateSituation();
+		
+		return this;
+	}
+	
+	this.clone = function(){
+		c = new Puzzle();
+		
+		c.data = [];
+		for(row = 1; row <= 3; row++){
+			c.data.push([]);
+			for(cell = 1; cell <= 3; cell++){
+				c.data[row - 1][cell -1] = this.data[row - 1][cell -1];
+			}
+		}
+		c.blankCoordinate = this.blankCoordinate.slice(0);
+		c.legalMoves = this.legalMoves.slice(0);
+		return c;
 	}
 	
 	
 	
-	this.calculateSituation = function(){
-		// get blank coordinate
-		blankCoordinate = [0, 0];
+	this.findTile = function(tile){
+		coordinate = [0, 0];
 		for(row = 1; row <= 3; row++){
 			for(cell = 1; cell <= 3; cell++){
-				if(this.data[row - 1][cell -1] == 0){
-					blankCoordinate = [row - 1, cell - 1];
+				if(this.data[row - 1][cell -1] == tile){
+					coordinate = [row - 1, cell - 1];
+					break;
+					break;
 				}
 			}
 		}
-		this.blankCoordinate = blankCoordinate;
+		return coordinate;
+	}
+	
+	this.findTileDefault = function(tile){
+		coordinate = [0, 0];
+		for(row = 1; row <= 3; row++){
+			for(cell = 1; cell <= 3; cell++){
+				if(this.defaultData[row - 1][cell -1] == tile){
+					coordinate = [row - 1, cell - 1];
+					break;
+					break;
+				}
+			}
+		}
+		return coordinate;
+	}
+	
+	this.calculateSituation = function(){
+		// get blank coordinate
+		this.blankCoordinate = this.findTile(0);
 		
 		// calculate legal moves
 		legalMoves = [];
@@ -100,11 +114,13 @@ function Puzzle (boardTable) {
 		if(this.blankCoordinate[1] < 2) legalMoves.push('right');
 		if(this.blankCoordinate[1] > 0) legalMoves.push('left');
 		this.legalMoves = legalMoves;
-	};
+		
+		return this;
+	}
 	
 	this.isLegalMove = function(move){
 		return this.legalMoves.indexOf(move) > -1;
-	};
+	}
 	
 	this.move = function(direction){
 		if(!this.isLegalMove(direction)) return false;
@@ -133,23 +149,39 @@ function Puzzle (boardTable) {
 		}
 		
 		this.calculateSituation();
+		
+		return this;
 	}
 	
 	this.refreshBoard = function(){
+		//if(this.boardTable == null) return false;
+		
 		this.boardTable.empty();
 		
 		for(row = 1; row <= 3; row++){
 			tr = $('<tr>')
 			for(cell = 1; cell <= 3; cell++){
 				puzzleCell = this.data[row - 1][cell -1];
-				tr.append('<td class="puzzle-' + puzzleCell + '">' + puzzleCell + '</td>')
+				tr.append('<td class="puzzle-' + puzzleCell + '">' + (puzzleCell == 0 ? '' : puzzleCell) + '</td>')
 			}
 			this.boardTable.append(tr);
 		}
-	};
+		
+		return this;
+	}
 	
-	
-	
+	this.isFinish = function(){
+		finish = true;
+		for(row = 1; row <= 3; row++){
+			for(cell = 1; cell <= 3; cell++){
+				//console.log('f(' + this.data[row - 1][cell - 1] + ',' + this.defaultData[row - 1][cell - 1] + ')');
+				if(this.data[row - 1][cell - 1] != this.defaultData[row - 1][cell - 1]){
+					return false;
+				}
+			}
+		}
+		
+		return finish;
+	}
+		
 }
-
-
