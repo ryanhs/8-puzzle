@@ -155,8 +155,8 @@ function testAlgoBFS(){
 	if(moves.length > 0){
 		//sort
 		moves.sort(function(a, b){
-			if(a.f > b. f) return 1;
-			if(a.f < b. f) return -1;
+			if(a.f > b.f) return 1;
+			if(a.f < b.f) return -1;
 			return 0;
 		});
 		
@@ -173,3 +173,141 @@ function testAlgoBFS(){
 	
 	testAlgoBFSTimeout = setTimeout(testAlgoBFS, 3);
 }
+
+// A*
+testAlgoAStarlog = [];
+testAlgoAStarstack = [];
+testAlgoAStarTimeout = 0;
+function testAlgoAStar(){
+	start = board.clone();
+	
+	closedSet = [];
+	openSet = [JSON.stringify(start.data)];
+	cameFrom = {};
+	
+	gScore = {};
+	gScore[JSON.stringify(start.data)] = 0;
+	
+	fScore = [];
+	fScore.push([JSON.stringify(start.data), calculateDistance(start)]);
+	
+	i = 0;
+	while(openSet.length > 0){
+		//sort fScore
+		fScore.sort(function(a, b){
+			if(a[1] > b[1]) return 1;
+			if(a[1] < b[1]) return -1;
+			return 0;
+		});
+		
+		// check if goal
+		current = openSet.indexOf(fScore[0][0]);
+		currentPuzzle = new Puzzle();
+		currentPuzzle.data = JSON.parse(fScore[0][0]);
+		currentPuzzle.calculateSituation();
+		currentF = calculateDistance(currentPuzzle);
+		
+		if(currentPuzzle.isFinish())
+			return testAlgoAStarReconstructPath(cameFrom, JSON.stringify(currentPuzzle.data));
+		
+		closedSet.push(JSON.stringify(currentPuzzle.data));
+		openSet.splice(current, 1)
+		
+			
+		neighbors = [];
+		for(move in currentPuzzle.legalMoves){
+			neighborBoard = currentPuzzle.clone();
+			neighborBoard.move(currentPuzzle.legalMoves[move]);
+			neighborF = calculateDistance(neighborBoard);
+			
+			if(closedSet.indexOf(JSON.stringify(neighborBoard.data)) != -1) continue;
+			
+			dummyPuzzle = currentPuzzle.clone();
+			dummyPuzzle.defaultData = neighborBoard.data.slice(0);
+			tentative_gScore = gScore[JSON.stringify(currentPuzzle.data)] + calculateDistance(dummyPuzzle);
+			//console.log(tentative_gScore);
+			
+			if(openSet.indexOf(JSON.stringify(neighborBoard.data)) == -1){
+				openSet.push(JSON.stringify(neighborBoard.data));
+			}else if (tentative_gScore >= gScore[JSON.stringify(neighborBoard.data)]){
+				continue; // this is not a  better path.
+			}
+			
+			cameFrom[JSON.stringify(neighborBoard.data)] = JSON.stringify(currentPuzzle.data);
+			gScore[JSON.stringify(neighborBoard.data)] = tentative_gScore;
+			fScore.push([JSON.stringify(neighborBoard.data), tentative_gScore + neighborF]);
+		}
+		
+		console.log(openSet);
+		i++;
+		if(i == 3000) break; // just break too much loop
+	}
+	
+	return false; // failure?
+	
+}
+function testAlgoAStarReconstructPath(cameFrom, currentData){
+	totalPath = [currentData];
+	while(cameFrom[currentData] !== undefined){
+		currentData = cameFrom[currentData];
+		totalPath.append(currentData);
+	}
+	
+	console.log(totalPath);
+	return totalPath;
+}
+
+
+/*
+function A*(start, goal)
+    // The set of nodes already evaluated.
+    closedSet := {}
+    // The set of currently discovered nodes still to be evaluated.
+    // Initially, only the start node is known.
+    openSet := {start}
+    // For each node, which node it can most efficiently be reached from.
+    // If a node can be reached from many nodes, cameFrom will eventually contain the
+    // most efficient previous step.
+    cameFrom := the empty map
+
+    // For each node, the cost of getting from the start node to that node.
+    gScore := map with default value of Infinity
+    // The cost of going from start to start is zero.
+    gScore[start] := 0 
+    // For each node, the total cost of getting from the start node to the goal
+    // by passing by that node. That value is partly known, partly heuristic.
+    fScore := map with default value of Infinity
+    // For the first node, that value is completely heuristic.
+    fScore[start] := heuristic_cost_estimate(start, goal)
+
+    while openSet is not empty
+        current := the node in openSet having the lowest fScore[] value
+        if current = goal
+            return reconstruct_path(cameFrom, goal)
+
+        openSet.Remove(current)
+        closedSet.Add(current)
+        for each neighbor of current
+            if neighbor in closedSet
+                continue		// Ignore the neighbor which is already evaluated.
+            // The distance from start to a neighbor
+            tentative_gScore := gScore[current] + dist_between(current, neighbor)
+            if neighbor not in openSet	// Discover a new node
+                openSet.Add(neighbor)
+            else if tentative_gScore >= gScore[neighbor]
+                continue		// This is not a better path.
+
+            // This path is the best until now. Record it!
+            cameFrom[neighbor] := current
+            gScore[neighbor] := tentative_gScore
+            fScore[neighbor] := gScore[neighbor] + heuristic_cost_estimate(neighbor, goal)
+
+    return failure
+
+function reconstruct_path(cameFrom, current)
+    total_path := [current]
+    while current in cameFrom.Keys:
+        current := cameFrom[current]
+        total_path.append(current)
+    return total_path
+*/
