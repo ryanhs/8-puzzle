@@ -1,0 +1,41 @@
+@import "bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
+@import "bower_components/bootstrap-sass/assets/stylesheets/bootstrap/theme";
+
+
+
+.board{
+	table{
+		border:1px solid #ccc;
+		border-collapse:collapse;
+		margin:auto;
+		width:90%;
+		
+		tr:nth-child(odd) td:nth-child(even),
+		tr:nth-child(even) td:nth-child(odd){
+			background: #C7A600;
+			color: #FFF;
+		}
+		
+		td{
+			width:33%;
+			text-align:center;
+			font-size: 14pt;
+			font-weight: bold;
+			
+			&.puzzle-0{
+				background: #000 !important;
+				color: #FFF !important;
+			}
+		}
+	}
+	
+	p{
+		font-size:9pt;
+		font-style:italic;
+	}	
+}
+
+.log{
+	max-height:300px;
+	overflow-x:scroll;
+}

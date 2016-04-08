@@ -1,0 +1,22 @@
+{
+  "name": "8puzzle",
+  "homepage": "https://github.com/ryanhs/8puzzle",
+  "authors": [
+    "ryan hs <mr.ryansilalahi@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap-sass": "^3.3.6"
+  }
+}
