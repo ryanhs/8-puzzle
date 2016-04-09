@@ -11,15 +11,17 @@ $(function(){
 	log.empty();
 	$(document).keydown(function(e) {
 		switch(e.which) {
-			case 37: moveTile('left'); break;
-			case 38: moveTile('up'); break;
-			case 39: moveTile('right'); break;
-			case 40: moveTile('down'); break;
+			// reverse for human interaction
+			case 37: moveTile('right'); break; // blank -> left
+			case 38: moveTile('down'); break; // blank -> up
+			case 39: moveTile('left'); break; // blank -> right
+			case 40: moveTile('up'); break; // blank -> down
 			default: return;
 		}
 		e.preventDefault();
 	});
 	
+	$(window).resize(resizeStyle);
 });
 
 function resizeStyle(){
