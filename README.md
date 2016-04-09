@@ -1,4 +1,4 @@
-# 8puzzle
+# 8-puzzle
 
 this project only a prototype for 8puzzle.
 i made this project for learn some AI algorithm.
