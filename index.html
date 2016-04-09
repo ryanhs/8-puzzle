@@ -72,19 +72,17 @@
 					<div class="panel-heading">Algorithm</div>
 					<div class="panel-body">
 						<p>
-							<a class="btn btn-success dfs-btn" href="#" onClick="javascript:$('.dfs-stop-btn').removeClass('hide');log.empty();log_i = 1;testAlgoDFS();return false;">Test DFS Algorithm</a>
+							<a class="btn btn-success dfs-btn" href="#" onClick="javascript:$('.dfs-stop-btn').removeClass('hide');$('.dfs-btn').attr('disabled', true);log.empty();log_i = 1;testAlgoDFS();return false;">Test DFS Algorithm</a>
 							<a class="btn btn-danger hide dfs-stop-btn" href="#" onClick="javascript:$('.dfs-stop-btn').addClass('hide');clearTimeout(testAlgoDFSTimeout);return false;">Stop</a>
 						</p>
 						<p>
-							<a class="btn btn-success bfs-btn" href="#" onClick="javascript:$('.bfs-stop-btn').removeClass('hide');log.empty();log_i = 1;testAlgoBFS();return false;">Test BFS Algorithm</a>
+							<a class="btn btn-success bfs-btn" href="#" onClick="javascript:$('.bfs-stop-btn').removeClass('hide');$('.bfs-btn').attr('disabled', true);log.empty();log_i = 1;testAlgoBFS();return false;">Test BFS Algorithm</a>
 							<a class="btn btn-danger hide bfs-stop-btn" href="#" onClick="javascript:$('.bfs-stop-btn').addClass('hide');clearTimeout(testAlgoBFSTimeout);return false;">Stop</a>
 						</p>
-						<!-- A* still under development :-)
 						<p>
-							<a class="btn btn-success astar-btn" href="#" onClick="javascript:$('.astar-stop-btn').removeClass('hide');log.empty();log_i = 1;testAlgoAStar();return false;">Test A* Algorithm</a>
-							<a class="btn btn-danger hide astar-stop-btn" href="#" onClick="javascript:$('.astar-stop-btn').addClass('hide');clearTimeout(testAlgoAStarTimeout);return false;">Stop</a>
+							<a class="btn btn-success astar-btn" href="#" onClick="javascript:$('.astar-stop-btn').removeClass('hide');$('.astar-btn').attr('disabled', true);log.empty();log_i = 1;testAlgoAStar();return false;">Test A* Algorithm</a>
+							<a class="btn btn-danger hide astar-stop-btn" href="#" onClick="javascript:$('.astar-btn').removeAttr('disabled');$('.astar-stop-btn').addClass('hide');clearTimeout(testAlgoAStarTimeout);return false;">Stop</a>
 						</p>
-						-->
 					</div>
 				</div>
 			</div>

@@ -92,7 +92,12 @@ testAlgoDFSlog = [];
 testAlgoDFSstack = [];
 testAlgoDFSTimeout = 0;
 function testAlgoDFS(){
-	if(board.isFinish()) return true;
+	if(board.isFinish()){
+		$('.dfs-stop-btn').addClass('hide');
+		$('.dfs-btn').removeAttr('disabled');
+		return true;
+	}
+	
 	parentState = board.data;
 	
 	moves = [];
@@ -134,7 +139,12 @@ testAlgoBFSlog = [];
 testAlgoBFSstack = [];
 testAlgoBFSTimeout = 0;
 function testAlgoBFS(){
-	if(board.isFinish()) return true;
+	if(board.isFinish()){
+		$('.bfs-stop-btn').addClass('hide');
+		$('.bfs-btn').removeAttr('disabled');
+		return true;
+	}
+	
 	parentState = board.data;
 	
 	moves = [];
@@ -175,139 +185,129 @@ function testAlgoBFS(){
 }
 
 // A*
-testAlgoAStarlog = [];
-testAlgoAStarstack = [];
-testAlgoAStarTimeout = 0;
+testAlgoAStarTimeout = false;
 function testAlgoAStar(){
-	start = board.clone();
+	testAlgoAStarTimeout = false;
+	
+	startPuzzle = board.clone();
+	startStringify = JSON.stringify(startPuzzle.data);
 	
 	closedSet = [];
-	openSet = [JSON.stringify(start.data)];
+	openSet = [startStringify];
+	
 	cameFrom = {};
 	
 	gScore = {};
-	gScore[JSON.stringify(start.data)] = 0;
+	gScore[startStringify] = 0;
 	
-	fScore = [];
-	fScore.push([JSON.stringify(start.data), calculateDistance(start)]);
+	fScore = {};
+	fScore[startStringify] = calculateDistance(startPuzzle);
 	
 	i = 0;
-	while(openSet.length > 0){
-		//sort fScore
-		fScore.sort(function(a, b){
-			if(a[1] > b[1]) return 1;
-			if(a[1] < b[1]) return -1;
+	
+	function do_AStar(){
+		if(openSet.length == 0){
+			$('.astar-stop-btn').addClass('hide');
+			$('.astar-btn').removeAttr('disabled');
+			console.log('no solution!'); // failure
+			return;
+		}
+		
+		openSet.sort(function(a, b){
+			if(fScore[a] > fScore[b]) return 1;
+			if(fScore[a] < fScore[b]) return -1;
 			return 0;
 		});
 		
-		// check if goal
-		current = openSet.indexOf(fScore[0][0]);
+		currentStringify = openSet[0];
 		currentPuzzle = new Puzzle();
-		currentPuzzle.data = JSON.parse(fScore[0][0]);
+		currentPuzzle.data = JSON.parse(currentStringify);
 		currentPuzzle.calculateSituation();
-		currentF = calculateDistance(currentPuzzle);
 		
-		if(currentPuzzle.isFinish())
-			return testAlgoAStarReconstructPath(cameFrom, JSON.stringify(currentPuzzle.data));
+		// if finish, do animation
+		if(currentPuzzle.isFinish()) return testAlgoAStarReconstructPath(cameFrom, currentStringify); 
 		
-		closedSet.push(JSON.stringify(currentPuzzle.data));
-		openSet.splice(current, 1)
+		openSet.splice(0, 1);
+		closedSet.push(currentStringify);
 		
-			
-		neighbors = [];
+		
+		moves = [];
 		for(move in currentPuzzle.legalMoves){
 			neighborBoard = currentPuzzle.clone();
 			neighborBoard.move(currentPuzzle.legalMoves[move]);
-			neighborF = calculateDistance(neighborBoard);
+			neighborBoardStringify = JSON.stringify(neighborBoard.data);
 			
-			if(closedSet.indexOf(JSON.stringify(neighborBoard.data)) != -1) continue;
+			if(closedSet.indexOf(neighborBoardStringify) != -1) continue;
 			
-			dummyPuzzle = currentPuzzle.clone();
-			dummyPuzzle.defaultData = neighborBoard.data.slice(0);
-			tentative_gScore = gScore[JSON.stringify(currentPuzzle.data)] + calculateDistance(dummyPuzzle);
-			//console.log(tentative_gScore);
+			tentative_gScore = gScore[currentStringify] + 1; // dist between is 1, on block at the time
 			
-			if(openSet.indexOf(JSON.stringify(neighborBoard.data)) == -1){
-				openSet.push(JSON.stringify(neighborBoard.data));
-			}else if (tentative_gScore >= gScore[JSON.stringify(neighborBoard.data)]){
-				continue; // this is not a  better path.
+			if(openSet.indexOf(neighborBoardStringify) == -1){
+				openSet.push(neighborBoardStringify);
+			}else if(tentative_gScore >=  gScore[neighborBoardStringify]){
+				continue; // this is not better path
 			}
 			
-			cameFrom[JSON.stringify(neighborBoard.data)] = JSON.stringify(currentPuzzle.data);
-			gScore[JSON.stringify(neighborBoard.data)] = tentative_gScore;
-			fScore.push([JSON.stringify(neighborBoard.data), tentative_gScore + neighborF]);
+			cameFrom[neighborBoardStringify] = currentStringify;
+			gScore[neighborBoardStringify] = tentative_gScore;
+			fScore[neighborBoardStringify] = tentative_gScore + calculateDistance(neighborBoard);
+			
+			
+			log.append($('<p style="font-family:monospace;">').html(neighborBoardStringify));
+			resizeStyle();
+			console.log(neighborBoardStringify);
 		}
 		
-		console.log(openSet);
 		i++;
-		if(i == 3000) break; // just break too much loop
+		testAlgoAStarTimeout = setTimeout(do_AStar, 1);
 	}
 	
-	return false; // failure?
 	
+	testAlgoAStarTimeout = setTimeout(do_AStar, 1);
 }
-function testAlgoAStarReconstructPath(cameFrom, currentData){
-	totalPath = [currentData];
-	while(cameFrom[currentData] !== undefined){
-		currentData = cameFrom[currentData];
-		totalPath.append(currentData);
+
+function testAlgoAStarReconstructPath(cameFrom, currentStringify){
+	console.log('solution found!');
+	console.log('recontructing path...');
+	
+	totalPath = [currentStringify];
+	
+	while(cameFrom[currentStringify] !== undefined){
+		currentStringify = cameFrom[currentStringify];
+		totalPath.push(currentStringify);
 	}
 	
-	console.log(totalPath);
-	return totalPath;
+	
+	pathReversed = [];
+	for(i = totalPath.length; i > 0; i--){
+		pathReversed.push(totalPath[i - 1])
+	}
+	
+	prev = pathReversed[0];
+	function do_animate(){
+		if(pathReversed.length == 0){
+			$('.astar-stop-btn').addClass('hide');
+			$('.astar-btn').removeAttr('disabled');
+			return;
+		}
+		
+		now = pathReversed[0];
+		pathReversed.splice(0, 1);
+		
+		prevData = JSON.parse(prev);
+		prevPuzzle = new Puzzle();
+		prevPuzzle.data = prevData;
+		prevPuzzle.calculateSituation();
+		
+		if(JSON.stringify(prevPuzzle.clone().move('up').data) == now) moveTile('up');
+		if(JSON.stringify(prevPuzzle.clone().move('right').data) == now) moveTile('right');
+		if(JSON.stringify(prevPuzzle.clone().move('down').data) == now) moveTile('down');
+		if(JSON.stringify(prevPuzzle.clone().move('left').data) == now) moveTile('left');
+		
+		prev = now;
+		testAlgoAStarTimeout = setTimeout(do_animate, 300);
+	}
+	
+	console.log('do animation...');
+	log.empty();
+	testAlgoAStarTimeout = setTimeout(do_animate, 300);
 }
-
-
-/*
-function A*(start, goal)
-    // The set of nodes already evaluated.
-    closedSet := {}
-    // The set of currently discovered nodes still to be evaluated.
-    // Initially, only the start node is known.
-    openSet := {start}
-    // For each node, which node it can most efficiently be reached from.
-    // If a node can be reached from many nodes, cameFrom will eventually contain the
-    // most efficient previous step.
-    cameFrom := the empty map
-
-    // For each node, the cost of getting from the start node to that node.
-    gScore := map with default value of Infinity
-    // The cost of going from start to start is zero.
-    gScore[start] := 0 
-    // For each node, the total cost of getting from the start node to the goal
-    // by passing by that node. That value is partly known, partly heuristic.
-    fScore := map with default value of Infinity
-    // For the first node, that value is completely heuristic.
-    fScore[start] := heuristic_cost_estimate(start, goal)
-
-    while openSet is not empty
-        current := the node in openSet having the lowest fScore[] value
-        if current = goal
-            return reconstruct_path(cameFrom, goal)
-
-        openSet.Remove(current)
-        closedSet.Add(current)
-        for each neighbor of current
-            if neighbor in closedSet
-                continue		// Ignore the neighbor which is already evaluated.
-            // The distance from start to a neighbor
-            tentative_gScore := gScore[current] + dist_between(current, neighbor)
-            if neighbor not in openSet	// Discover a new node
-                openSet.Add(neighbor)
-            else if tentative_gScore >= gScore[neighbor]
-                continue		// This is not a better path.
-
-            // This path is the best until now. Record it!
-            cameFrom[neighbor] := current
-            gScore[neighbor] := tentative_gScore
-            fScore[neighbor] := gScore[neighbor] + heuristic_cost_estimate(neighbor, goal)
-
-    return failure
-
-function reconstruct_path(cameFrom, current)
-    total_path := [current]
-    while current in cameFrom.Keys:
-        current := cameFrom[current]
-        total_path.append(current)
-    return total_path
-*/
